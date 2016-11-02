@@ -50,7 +50,7 @@ class PaginatedCollection(object):
 
     def __init__(self, resource_class, data):
         self.klass = resource_class
-        self.elements = [resource_class(res) for res in data['data']]
+        self.elements = [resource_class(data=res, included=data.get('included')) for res in data['data']]
         self._collection_link = None
         self._first = None
         self._current = None
@@ -127,6 +127,22 @@ def find_class_for_resource(name):
     module = importlib.import_module('.{}'.format(name), package=package)
     return getattr(module, underscore_to_titlecase(name))
 
+def get_included_objects(data, included):
+    data_dict = False
+    data_list = []
+
+    if isinstance(data, dict):
+        data_dict = True
+        data = [data]
+
+    for ref in data:
+        cls = find_class_for_resource(singularize(ref['type']))
+        data_list.extend([cls(d) for d in included if d['id'] == ref['id'] and d['type'] == ref['type']])
+
+    if data_dict:
+        return data_list[0]
+    else:
+        return data_list
 
 class CachedRelationship(object):
     """
@@ -171,7 +187,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
 
     resource_type = None
 
-    def __init__(self, data=None, errors=None):
+    def __init__(self, data=None, errors=None, included=None):
         self.errors = None
         self._attributes = None
         if errors:
@@ -196,7 +212,9 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
 
             if 'relationships' in data:
                 for k, v in data['relationships'].items():
-                    if 'links' in v:
+                    if 'data' in v:
+                        self._attributes[k] = get_included_objects(v['data'], included)
+                    elif 'links' in v:
                         self._attributes[k] = CachedRelationship(singularize(k), v)
         else:
             raise DataMissingError(
@@ -274,7 +292,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
         return PaginatedCollection(cls, data)
 
     @classmethod
-    def where(cls, **clauses):
+    def where(cls, include=None, **clauses):
         """
         Create a new resource in ESP.
 
@@ -305,6 +323,8 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
             else:
                 filters.append(('filter[{}]'.format(attr), val))
         filters.append(('page[size]', settings.per_page))
+        if include:
+            filters.append(('include', include))
         query = urlencode(filters)
         return cls._all(endpoint=make_endpoint(cls._make_path([path],
                                                               query=query)))
