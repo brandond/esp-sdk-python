@@ -267,6 +267,17 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
         else:
             object.__setattr__(self, attr, value)
 
+    def __iter__(self):
+        return iter((self,))
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, idx):
+        if idx != 0:
+            raise IndexError()
+        return self
+
     @classmethod
     def _make_request(cls, endpoint, request_type, data=None):
         return requester(endpoint, request_type, data=data)
