@@ -54,7 +54,10 @@ class PaginatedCollection(object):
     def __init__(self, resource_class, data):
         self.klass = resource_class
         self.elements = [resource_class(data=res, included=data.get('included')) for res in data['data']]
-        self._collection_link = None
+        self.collection_path = None
+        self.current_page_number = 0
+        self.first_page_number = 0
+        self.last_page_number = 0
         self._first = None
         self._current = None
         self._next = None
@@ -77,11 +80,19 @@ class PaginatedCollection(object):
             self._current = links['self']
             url = urlparse(self._current)
             self.collection_path = url.path
-            self.current_page_number = parse_qs(url.query)['page[number]'][0]
+            self.current_page_number = int(parse_qs(url.query)['page[number]'][0])
         if 'first' in links:
             self._first = links['first']
+            url = urlparse(self._first)
+            self.first_page_number = int(parse_qs(url.query)['page[number]'][0])
+        else:
+            self.first_page_number = self.current_page_number
         if 'last' in links:
             self._last = links['last']
+            url = urlparse(self._last)
+            self.last_page_number = int(parse_qs(url.query)['page[number]'][0])
+        else:
+            self.last_page_number = self.current_page_number
         if 'next' in links:
             self._next = links['next']
         if 'prev' in links:
@@ -99,15 +110,17 @@ class PaginatedCollection(object):
 
     def first_page(self):
         if not self._first:
-            raise PageError('No first page')
+            return self
         return self.klass.find(endpoint=self._first)
 
     def last_page(self):
         if not self._last:
-            raise PageError('No last page')
+            return self
         return self.klass.find(endpoint=self._last)
 
     def page(self, page_num):
+        if page_num < self.first_page_number or page_num > self.last_page_number:
+            raise PageError('Page number out of bounds')
         query = {
             'page[number]': page_num,
             'page[size]': settings.per_page
