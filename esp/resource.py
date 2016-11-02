@@ -304,7 +304,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
             endpoint = make_endpoint(cls._resource_path(id))
         response = cls._make_request(endpoint, GET_REQUEST)
         data = response.json()
-        if response.status_code == 422:
+        if response.status_code in [422, 500]:
             return cls(errors=data['errors'])
         return cls(data['data'])
 
@@ -315,7 +315,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
                 cls._resource_collection_path())
         response = cls._make_request(endpoint, GET_REQUEST)
         data = response.json()
-        if response.status_code == 422:
+        if response.status_code in [422, 500]:
             return cls(errors=data['errors'])
         return PaginatedCollection(cls, data)
 
@@ -380,7 +380,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
 
         response = cls._make_request(endpoint, POST_REQUEST, data=serialized)
         data = response.json()
-        if response.status_code == 422:
+        if response.status_code in [422, 500]:
             return cls(errors=data['errors'])
         return cls(data['data'])
 
@@ -418,7 +418,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
                                       data=self.to_json())
         data = response.json()
         cls = find_class_for_resource(self.singular_name)
-        if response.status_code == 422:
+        if response.status_code in [422, 500]:
             return cls(errors=data['errors'])
         return cls(data['data'])
 
@@ -432,7 +432,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
         endpoint = make_endpoint(self._resource_path(self.id_))
         response = self._make_request(endpoint,
                                       DELETE_REQUEST)
-        if response.status_code == 422:
+        if response.status_code in [422, 500]:
             data = response.json()
             cls = find_class_for_resource(self.singular_name)
             return cls(errors=data['errors'])
