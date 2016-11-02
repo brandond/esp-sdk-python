@@ -9,6 +9,7 @@ from .packages import requests
 from .settings import settings
 
 logger = logging.getLogger(__name__)
+session = requests.Session()
 
 
 def make_endpoint(uri):
@@ -19,7 +20,7 @@ def make_endpoint(uri):
 def requester(url, request_type, headers={}, data=None):
     logging.debug('Making request to {}'.format(url))
     headers['User-Agent'] = settings.user_agent
-    method = getattr(requests, request_type)
+    method = getattr(session, request_type)
     proxies = None
     if settings.http_proxy:
         proxies = [settings.http_proxy]
