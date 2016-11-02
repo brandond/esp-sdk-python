@@ -1,4 +1,5 @@
 import importlib
+import logging
 import json
 
 from .sdk import requester, make_endpoint
@@ -9,6 +10,8 @@ from .utilities import (pluralize,
                         titlecase_to_underscore,
                         underscore_to_titlecase)
 from .packages.six.moves.urllib.parse import urlencode, parse_qs, urlparse
+
+logger = logging.getLogger(__name__)
 
 GET_REQUEST = 'get'
 PATCH_REQUEST = 'patch'
@@ -169,6 +172,10 @@ class CachedRelationship(object):
         if not self._value:
             if not self.endpoint:
                 return []
+            path = urlparse(self.endpoint)
+            path_query = parse_qs(path.query)
+            path_query.update({'page[size]': settings.per_page})
+            self.endpoint = path._replace(query=urlencode(path_query,doseq=1)).geturl()
             response = requester(self.endpoint, GET_REQUEST)
             if response.status_code != 200:
                 response.raise_for_status()
@@ -263,14 +270,14 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
         return cls._make_path([cls.plural_name], extra, query=urlencode(query))
 
     @classmethod
-    def _make_path(cls, path, extra=[], query=None):
+    def _make_path(cls, path, extra=[], query=''):
         if not isinstance(extra, list):
             raise TypeError('extra needs to be a list')
         path.extend(extra)
-        path = '/'.join([str(item) for item in path])
-        if query:
-            path = path + '?' + query
-        return path
+        path = urlparse('/'.join([str(item) for item in path]))
+        path_query = parse_qs(path.query)
+        path_query.update(parse_qs(query))
+        return path._replace(query=urlencode(path_query,doseq=1)).geturl()
 
     @classmethod
     def find(cls, id=None, endpoint=None):
