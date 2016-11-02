@@ -58,10 +58,11 @@ class PaginatedCollection(object):
         self.current_page_number = 0
         self.first_page_number = 0
         self.last_page_number = 0
+        self.errors = None
         self._first = None
+        self._prev = None
         self._current = None
         self._next = None
-        self._prev = None
         self._last = None
         if 'links' in data:
             self._parse_links(data['links'])
@@ -217,7 +218,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
 
     def __init__(self, data=None, errors=None, included=None):
         self.errors = None
-        self._attributes = None
+        self._attributes = {}
         if errors:
             self.errors = [e['title'] for e in errors]
         elif data:
@@ -233,7 +234,6 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
             # to avoid collisions
             self.id_ = data['id']
             self.type_ = data['type']
-            self._attributes = {}
 
             for k, v in data['attributes'].items():
                 self._attributes[k] = v
