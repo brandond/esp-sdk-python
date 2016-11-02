@@ -128,6 +128,14 @@ def find_class_for_resource(name):
     return getattr(module, underscore_to_titlecase(name))
 
 def get_included_objects(data, included):
+    """
+    Looks up data references in included data and instantiates the proper class
+
+    :param data: Dict containing type, id pairs to be looked up in the included data
+    :type data: dict or list of dict
+    :param included: Included data returned by the web service
+    :type included: list of dict
+    """
     data_dict = False
     data_list = []
 
@@ -160,7 +168,7 @@ class CachedRelationship(object):
         """
         if not self._value:
             if not self.endpoint:
-                return None
+                return []
             response = requester(self.endpoint, GET_REQUEST)
             if response.status_code != 200:
                 response.raise_for_status()
@@ -199,7 +207,7 @@ class ESPResource(six.with_metaclass(ESPMeta, object)):
                 self.resource_type = self.plural_name
             if data['type'] != self.resource_type:
                 raise ObjectMismatchError('{} cannot store data for {}'.format(
-                    self.resource_name, data['type']))
+                    self.resource_type, data['type']))
 
             # type and id are python keywords, so we have to append _ to them
             # to avoid collisions

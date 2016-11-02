@@ -32,5 +32,6 @@ def requester(url, request_type, headers={}, data=None):
         proxies=proxies)
     if response.status_code == 401:
         raise UnauthorizedError
-    logger.debug('Response: {}'.format(json.dumps(response.json(),indent=4)))
+    if logger.getEffectiveLevel() == logging.DEBUG:
+        logger.debug('Response: {}'.format(json.dumps(response.json(),indent=4)))
     return response

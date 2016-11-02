@@ -17,4 +17,5 @@ class User(ESPResource):
 # some API responses return the user namespaces as created_by in the
 # relationships field so I'm creating this hack to navigate around that issue.
 class CreatedBy(User):
-    pass
+
+    resource_type = 'users'
