@@ -15,7 +15,7 @@ class Suppression(ESPResource):
         raise NotImplementedError('Suppression does not implement a destroy method')
 
     def deactivate(self):
-        endpoint = make_endpoint('/'.join([self._resource_path(),
+        endpoint = make_endpoint('/'.join([self._resource_path(self.id_),
                                            'deactivate']))
         response = self._make_request(endpoint, PATCH_REQUEST)
         data = response.json()
