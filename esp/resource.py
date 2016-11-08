@@ -30,8 +30,7 @@ PREDICATES = ('sorts', 'm', 'eq', 'eq_any', 'eq_all', 'not_eq', 'not_eq_any',
               'not_cont_all', 'start', 'start_any', 'start_all', 'not_start',
               'not_start_any', 'not_start_all', 'end', 'end_any', 'end_all',
               'not_end', 'not_end_any', 'not_end_all', 'true', 'false',
-              'present', 'blank', 'null', 'not_null')
-
+              'present', 'blank', 'null', 'not_null', 'first_seen', 'suppressed')
 
 class ObjectMismatchError(Exception):
     pass
