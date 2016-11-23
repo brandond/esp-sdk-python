@@ -152,6 +152,9 @@ def get_included_objects(data, included):
     :param included: Included data returned by the web service
     :type included: list of dict
     """
+    if not data:
+        return
+
     data_dict = False
     data_list = []
 

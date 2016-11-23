@@ -6,11 +6,14 @@ import json
 
 from .auth import ESPAuth, UnauthorizedError
 from .packages import requests
+from .packages.requests.adapters import HTTPAdapter
+from .packages.requests.packages.urllib3.util.retry import Retry
 from .settings import settings
 
 logger = logging.getLogger(__name__)
 session = requests.Session()
-
+retries = Retry(total=2, status_forcelist=[429], backoff_factor=30)
+session.mount(settings.host, HTTPAdapter(max_retries=retries))
 
 def make_endpoint(uri):
     url = '{}{}/{}'.format(settings.host, settings.api_prefix, uri)
