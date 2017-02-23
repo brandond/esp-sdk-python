@@ -36,6 +36,8 @@ setup(
     install_requires=[
         'requests',
         'six',
+    ],
+    tests_require=[
         'coverage',
         'mock',
         'nose',
