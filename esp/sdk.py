@@ -12,7 +12,7 @@ from .settings import settings
 
 logger = logging.getLogger(__name__)
 session = requests.Session()
-retries = Retry(total=2, status_forcelist=[429], backoff_factor=30)
+retries = Retry(total=2, status_forcelist=[429], backoff_factor=30, method_whitelist=['GET', 'PATCH', 'POST', 'PUT', 'DELETE'])
 session.mount(settings.host, HTTPAdapter(max_retries=retries))
 
 def make_endpoint(uri):
