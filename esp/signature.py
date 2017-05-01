@@ -1,5 +1,9 @@
+import json
+
 from .alert import Alert
+from .external_account import ExternalAccount
 from .resource import (ESPResource,
+                       DELETE_REQUEST,
                        POST_REQUEST,
                        find_class_for_resource)
 from .sdk import make_endpoint
@@ -36,3 +40,23 @@ class Signature(ESPResource):
                                            regions=kwargs['regions'],
                                            external_account_ids=kwargs['external_account_ids'],
                                            reason=kwargs['reason'])
+
+    def disable(self, external_account_id):
+        endpoint = make_endpoint('/'.join([ExternalAccount._resource_path(external_account_id),
+                                           'disabled_signatures']))
+        serialized = json.dumps({'data': {'attributes': {'signature_id': self.id_}}}) 
+        response =  self._make_request(endpoint, POST_REQUEST, data=serialized)
+        data = response.json()
+        if response.status_code == 422:
+            cls = find_class_for_resource(self.singular_name)
+            return cls(errors=data['errors'])
+
+    def enable(self, external_account_id):
+        endpoint = make_endpoint('/'.join([ExternalAccount._resource_path(external_account_id),
+                                           'disabled_signatures']))
+        serialized = json.dumps({'data': {'attributes': {'signature_id': self.id_}}}) 
+        response = self._make_request(endpoint, DELETE_REQUEST, data=serialized)
+        data = response.json()
+        if response.status_code == 422:
+            cls = find_class_for_resource(self.singular_name)
+            return cls(errors=data['errors'])
