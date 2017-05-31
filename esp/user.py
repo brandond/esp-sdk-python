@@ -14,7 +14,7 @@ class User(ESPResource):
         raise NotImplementedError('User does not implement a destroy method')
 
 
-# some API responses return the user namespaces as created_by in the
+# some API responses return the user namespaced as created_by in the
 # relationships field so I'm creating this hack to navigate around that issue.
 class CreatedBy(User):
 
